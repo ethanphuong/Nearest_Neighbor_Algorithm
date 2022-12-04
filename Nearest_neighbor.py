@@ -75,7 +75,7 @@ def backward_selection(list, file_name, file_count):
     #get column number
     col_num = num_columns(file_name)
     
-    full_total, total = 0, 0
+    full_total, total, prevAccuracy, maxAccuracy = 0, 0, 0, 0
     #dataset summary
     print("\nThis dataset has", col_num - 1, "features, with", file_count, "instances.\n")
     for i in (list):
@@ -84,17 +84,36 @@ def backward_selection(list, file_name, file_count):
     #initial accuracy with all the features
     print("Running nearest neighbor algorithm with all ", col_num - 1, " features I get an accuracy of ", (str([(full_total / (file_count * (col_num - 1))) * 100])[1:5]), "%\n", sep="")
 
+    clone_list = list.copy()
+    curr_subset, print_list, max_list = [], [], []
     #iterate through the list eliminating the lowest correctly classified feature each iteration
-    for i in range(1, len(list) + 1):
-        total = sum(list)
-        #accuracy is the total current correctly classified in the list divided by the total number of features in the current list
-        accuracy = ((int(total) / (file_count * (col_num - 1))) * 100)
-        #preventing spurious precision by ending the string at 4
-        print("Using feature(s) ", list, " accuracy is ", (str(accuracy)[0:4]), "%", "\n", sep="")
-        #remove the minimum feature in each iteration
-        list.remove(min(list))
+    for i in range(1, len(clone_list)):
         #removed one feature
         col_num -= 1
+        for j in clone_list:
+            temp = clone_list[0]
+            clone_list.pop(0)
+            total = sum(clone_list)
+            #accuracy is the total current correctly classified in the list divided by the total number of features in the current list
+            accuracy = ((int(total) / (file_count * (col_num - 1))) * 100)
+            #preventing spurious precision by ending the string at 4
+            for a in clone_list:
+                curr_subset.append(list.index(a) + 1)
+            print("Using feature(s) ", curr_subset, " accuracy is ", (str(accuracy)[0:4]), "%")
+            if i == (len(list)) - 2:
+                if prevAccuracy < accuracy:
+                    prevAccuracy = accuracy
+                    maxAccuracy = accuracy
+                    max_list = clone_list.copy()
+            clone_list.append(temp)
+            curr_subset = []
+        #remove the minimum feature in each iteration
+        clone_list.remove(min(clone_list))
+        print("\n")
+    prevAccuracy = 0
+    for i in max_list:
+        print_list.append(list.index(i) + 1)
+    print("Finished search! The best feature subset is ", print_list, " which has an accuracy of ", (str(maxAccuracy)[0:4]), "%", sep="")
 
 #forward selection search
 def forward_selection(list, file_name, file_count):
@@ -102,8 +121,8 @@ def forward_selection(list, file_name, file_count):
     #get column number
     col_num = num_columns(file_name)
     
-    full_total, total, best_value, subset_place, combination, loop_round, best_subset, best_accuracy, prevAccuracy = 0, 0, 0, 0, 0, 0, 0, 0, 0
-    set_list = []
+    full_total, total, best_value, subset_place, combination, loop_round, best_subset, best_accuracy, prevAccuracy = 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    set_list, curr_subset, print_subset = [], [], []
 
     #dataset summary
     print("\nThis dataset has", col_num - 1, "features, with", file_count, "instances.\n")
@@ -111,7 +130,7 @@ def forward_selection(list, file_name, file_count):
         full_total += i
 
     #initial accuracy with all the features
-    print("Running nearest neighbor algorithm with all ", col_num - 1, " features I get an accuracy of ", (str([(full_total / (file_count * (col_num - 1))) * 100])[1:5]), "%\n", sep="")
+    print("Running nearest neighbor algorithm with all ", col_num - 1, " features I get an accuracy of ", (str([(full_total / (file_count * (col_num - 1))) * 100])[1:5]), "%", sep="")
     #forward selection by choosing the highest combination accuracy each time
     for i in range(1, len(list)):
         set_number = 0
@@ -129,7 +148,9 @@ def forward_selection(list, file_name, file_count):
                 #same way to find accuracy as backwards search
                 accuracy = ((int(total) / (file_count * len(subset))) * 100)
                 #print out different combinations
-                print("Using feature(s) ", subset, " accuracy is ", (str(accuracy)[0:4]), "%", sep="")
+                for a in subset:
+                    curr_subset.append(list.index(a) + 1)
+                print("Using feature(s) ", curr_subset, " accuracy is ", (str(accuracy)[0:4]), "%", sep="")
                 #sort current subset in descending order to make it easier to figure out which combo has the best value
                 sorted_subset = sorted(subset, reverse=True)
                 if (int(sorted_subset[subset_place]) / file_count) > best_value:
@@ -140,18 +161,22 @@ def forward_selection(list, file_name, file_count):
                     #change the best subset to the current subset
                     best_subset = subset
             
-            combination = 0
-            total = 0
+            curr_subset, print_subset = [], []
+            combination, total = 0, 0
+        print("\n")
         #checking if the accuracy was lowered
         if prevAccuracy > best_accuracy:
             print("\n", "Warning, accuracy lowered, continuing search", sep="")
-        #print the best combination from the current list that has been selected
-        print("\n", "Feature set", best_subset, " was the best, accuracy is ", (str(best_accuracy)[0:4]), "%", "\n", sep="")
+        
         subset_place += 1
         loop_round += 1
         set_list.append(best_value * file_count)
-        best_value = 0
         prevAccuracy = best_accuracy
+
+    #print the best combination from the current list that has been selected
+    for a in best_subset:
+        print_subset.append(list.index(a) + 1)
+    print("Feature set ", print_subset, " was the best, accuracy is ", (str(best_accuracy)[0:4]), "%", "\n", sep="")
 
 def main():
     file_length = 0
