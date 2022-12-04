@@ -121,7 +121,7 @@ def forward_selection(list, file_name, file_count):
     #get column number
     col_num = num_columns(file_name)
     
-    full_total, total, best_value, subset_place, combination, loop_round, best_subset, best_accuracy, prevAccuracy = 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    full_total, total, best_value, subset_place, combination, loop_round, best_subset, best_accuracy, prevAccuracy, count = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     set_list, curr_subset, print_subset = [], [], []
 
     #dataset summary
@@ -148,8 +148,11 @@ def forward_selection(list, file_name, file_count):
                 #same way to find accuracy as backwards search
                 accuracy = ((int(total) / (file_count * len(subset))) * 100)
                 #print out different combinations
-                for a in subset:
-                    curr_subset.append(list.index(a) + 1)
+                for a, b in enumerate(subset):
+                    if (list.index(b) + 1) in curr_subset:
+                        curr_subset.append(list.index(b) + 2)
+                    else:
+                        curr_subset.append(list.index(b) + 1)
                 print("Using feature(s) ", curr_subset, " accuracy is ", (str(accuracy)[0:4]), "%", sep="")
                 #sort current subset in descending order to make it easier to figure out which combo has the best value
                 sorted_subset = sorted(subset, reverse=True)
