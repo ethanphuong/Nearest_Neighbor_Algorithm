@@ -89,6 +89,7 @@ def backward_selection(list, file_name, file_count):
         total = sum(list)
         #accuracy is the total current correctly classified in the list divided by the total number of features in the current list
         accuracy = ((int(total) / (file_count * (col_num - 1))) * 100)
+        #preventing spurious precision by ending the string at 4
         print("Using feature(s) ", list, " accuracy is ", (str(accuracy)[0:4]), "%", "\n", sep="")
         #remove the minimum feature in each iteration
         list.remove(min(list))
